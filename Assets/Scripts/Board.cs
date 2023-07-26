@@ -6,6 +6,7 @@ public class Board : MonoBehaviour
 {
     [SerializeField]
     private GameObject tilePrafab;
+    private MemoryPool memoryPool;
     [SerializeField]
     private Transform tilesParent;
     [SerializeField]
@@ -16,16 +17,27 @@ public class Board : MonoBehaviour
     private Vector2 tileSize;
     private float Spacing;
 
-    private void Start()
+    private void Awake()
     {
         puzzleSize = new Vector2Int(4, 4);
+        memoryPool = new MemoryPool(tilePrafab, tilesParent, puzzleSize.x);
         float unitCnt = (puzzleSize.x+1)*spaceRatio + puzzleSize.x;
         RectTransform boarderRectTransform = tilesParent.GetComponent<RectTransform>();
         tileSize = new Vector2(boarderRectTransform.rect.width / unitCnt, boarderRectTransform.rect.height / unitCnt);
         Spacing = tileSize.x * spaceRatio;
         anchorPos = tilesParent.position;
-        
-        for(int i=0; i<5; ++i)
+    }
+
+    private void OnApplicationQuit() 
+    {
+        Debug.Log("Called OnApplicationQuit");
+        memoryPool.DestoryObjects();
+    }
+
+    private void Start()
+    {
+        // test code
+        for(int i=0; i<3; ++i)
         {
             SpawnTile(Random.Range(0, puzzleSize.x*puzzleSize.y));
         }
@@ -53,7 +65,7 @@ public class Board : MonoBehaviour
     }
     private void SpawnTile(int index, int level = 0)
     {
-        GameObject clone = Instantiate(tilePrafab, tilesParent);
+        GameObject clone = memoryPool.ActivePoolItem();
 
         RectTransform rect = clone.GetComponent<RectTransform>();
         rect.position = getTargetPos(index);

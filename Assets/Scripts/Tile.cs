@@ -24,6 +24,11 @@ public class Tile : MonoBehaviour
         Numeric = (1 << level);
     }
 
+    public void OnMoveTo(Vector3 end)
+    {
+        StartCoroutine("MoveTo", end);
+    }
+
     private IEnumerator MoveTo(Vector3 end)
     {
         float current = 0;
