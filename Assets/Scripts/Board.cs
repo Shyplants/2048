@@ -16,8 +16,6 @@ public class Board : MonoBehaviour
     private Vector2 tileSize;
     private float Spacing;
 
-
-
     private void Start()
     {
         puzzleSize = new Vector2Int(4, 4);
@@ -33,15 +31,32 @@ public class Board : MonoBehaviour
         }
     }
 
-    private void SpawnTile(int index, int level = 0)
+    private void Update() 
     {
+        float x = Input.GetAxisRaw("Horizontal");
+        float y = Input.GetAxisRaw("Vertical");
+        if(x != 0 || y != 0) 
+        {
+            
+        }
+    }
+
+    private Vector3 getTargetPos(int index)
+    {
+        Vector3 pos = anchorPos;
+
         int y = index / puzzleSize.x;
         int x = index % puzzleSize.x;
 
+        pos += new Vector3(x*tileSize.x + (x+1)*Spacing, -(y*tileSize.y + (y+1)*Spacing), 0);
+        return pos;
+    }
+    private void SpawnTile(int index, int level = 0)
+    {
         GameObject clone = Instantiate(tilePrafab, tilesParent);
 
         RectTransform rect = clone.GetComponent<RectTransform>();
-        rect.position = anchorPos + new Vector3(x*tileSize.x + (x+1)*Spacing, -(y*tileSize.y + (y+1)*Spacing), 0);
+        rect.position = getTargetPos(index);
         rect.sizeDelta = tileSize;
         
         Tile tile = clone.GetComponent<Tile>();
