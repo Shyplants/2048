@@ -77,6 +77,28 @@ public class MemoryPool : MonoBehaviour
 
         return null;
     }
+    public GameObject ActivePoolItem(GameObject poolObject)
+    {
+        if(poolItemList == null || poolObject == null) return null;
+
+        int count = poolItemList.Count;
+        for(int i=0; i<count; ++i)
+        {
+            PoolItem poolItem = poolItemList[i];
+
+            if(poolItem.gameObject == poolObject)
+            {
+                activeCount++;
+
+                poolItem.isActive = true;
+                poolItem.gameObject.SetActive(true);
+
+                return poolItem.gameObject;
+            }
+        }
+
+        return null;
+    }
 
     public void DeactivatePoolItem(GameObject removeObject)
     {
@@ -97,5 +119,38 @@ public class MemoryPool : MonoBehaviour
                 return;
             }
         }
+    }
+
+    public void DeactivatePoolItems()
+    {
+        if(poolItemList == null) return;
+
+        int count = poolItemList.Count;
+        for(int i=0; i<count; ++i)
+        {
+            PoolItem poolItem = poolItemList[i];
+
+            activeCount--;
+            poolItem.isActive = false;
+            poolItem.gameObject.SetActive(false);
+        }
+    }
+
+    public bool IsActivePoolItem(GameObject poolObject)
+    {
+        if(poolItemList == null || poolObject == null) return false;
+
+        int count = poolItemList.Count;
+        for(int i=0; i<count; ++i)
+        {
+            PoolItem poolItem = poolItemList[i];
+
+            if(poolItem.gameObject == poolObject)
+            {
+                return poolItem.isActive;
+            }
+        }
+
+        return false;
     }
 }

@@ -18,10 +18,21 @@ public class Tile : MonoBehaviour
         get => numeric;
     }
 
-    public void Setup(int level)
+    private int level;
+    public int Level
+    {
+        set
+        {
+            level = value;
+            Numeric = (1 << level);
+        }
+        get => level;
+    }
+
+    public void Setup()
     {
         textNumeric = GetComponentInChildren<TextMeshProUGUI>();
-        Numeric = (1 << level);
+        Level = 0;
     }
 
     public void OnMoveTo(Vector3 end)
@@ -45,5 +56,10 @@ public class Tile : MonoBehaviour
 
             yield return null;
         }
+    }
+
+    public bool IsEmpty()
+    {
+        return Level == 0;
     }
 }
