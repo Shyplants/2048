@@ -22,6 +22,7 @@ public class Board : MonoBehaviour
     private bool canActive;
     private float actionDelayTime;
     private List<Vector2Int> moveList;
+    private List<int> emptyList;
     private bool[] isFilled;
     private bool[] isMerged;
     private int[] numState;
@@ -32,6 +33,7 @@ public class Board : MonoBehaviour
         puzzleSize = new Vector2Int(4, 4);
         boardState = new Dictionary<int, GameObject>();
         moveList = new List<Vector2Int>();
+        emptyList = new List<int>();
 
         float unitCnt = (puzzleSize.x+1)*spaceRatio + puzzleSize.x;
         RectTransform boarderRectTransform = tilesParent.GetComponent<RectTransform>();
@@ -67,6 +69,7 @@ public class Board : MonoBehaviour
             tile.OnMoveToComplete += HandleMoveToComplete;
 
             boardState[i] = clone;
+            emptyList.Add(i);
         }
     }
 
@@ -121,19 +124,17 @@ public class Board : MonoBehaviour
     }
 
     
-    private void SpawnTile()
+    private bool SpawnTile()
     {
-        int index;
-        while(true)
-        {   
-            index = Random.Range(0, puzzleSize.x*puzzleSize.y);
-            if(!boardState[index].GetComponent<Tile>().IsActive) break;
-        }
+        if(emptyList.Count == 0) return false;
 
+        int index = emptyList[Random.Range(0, emptyList.Count)];
         Tile tile = boardState[index].GetComponent<Tile>();
         tile.Numeric = 1 << (Random.Range(0, 2) + 1);
 
         numState[index] = tile.Numeric;
+
+        return true;
     }
     private int Pos2Dto1D(int y, int x)
     {
@@ -147,18 +148,16 @@ public class Board : MonoBehaviour
 
     private void UpdateBoardState()
     {
-        for(int i=0; i<puzzleSize.x*puzzleSize.y; ++i)
-        {
-            boardState[i].GetComponent<Tile>().Numeric = numState[i];
-        }
-    }
-
-    private void ClearBoardState()
-    {
+        emptyList.Clear();
         for(int i=0; i<puzzleSize.x*puzzleSize.y; ++i)
         {
             boardState[i].GetComponent<RectTransform>().localPosition = tilePos[i];
-            boardState[i].GetComponent<Tile>().Numeric = 0;
+            boardState[i].GetComponent<Tile>().Numeric = numState[i];
+
+            if(numState[i] == 0)
+            {
+                emptyList.Add(i);
+            }
         }
     }
 
@@ -167,15 +166,14 @@ public class Board : MonoBehaviour
         moveCount--;
         if(moveCount == 0)
         {   
-            ClearBoardState();
             UpdateBoardState();
-        
-            canActive = true;     
+             
             while(true)
             {
                 SpawnTile();
                 break;
             }
+            canActive = true;
         }
     }
 
