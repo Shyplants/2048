@@ -4,17 +4,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 
-
 public class Tile : MonoBehaviour
 {
     private TextMeshProUGUI textNumeric;
-
-    private int index;
-    public int Index
-    {
-        set => index = value;
-        get => index;
-    }
 
     private int numeric;
     public int Numeric
@@ -23,23 +15,9 @@ public class Tile : MonoBehaviour
         {
             numeric = value;
             textNumeric.text = numeric.ToString();
+            IsActive = (numeric > 0 ? true : false);
         }
         get => numeric;
-    }
-
-    private int level;
-    public int Level
-    {
-        set
-        {
-            level = value;
-            Numeric = (1 << level);
-            if(level == 0)
-            {
-                this.gameObject.SetActive(false);
-            }
-        }
-        get => level;
     }
 
     private bool isActive;
@@ -53,11 +31,10 @@ public class Tile : MonoBehaviour
         get => isActive;
     }
 
-    public void Setup()
+    public void Setup(int num)
     {
         textNumeric = GetComponentInChildren<TextMeshProUGUI>();
-        Level = 0;
-        IsActive = false;
+        Numeric = num;
     }
 
     public event Action OnMoveToComplete;
@@ -71,7 +48,7 @@ public class Tile : MonoBehaviour
     {
         float current = 0;
         float percent = 0;
-        float moveTime = 0.2f;
+        float moveTime = 0.1f;
         Vector3 start = GetComponent<RectTransform>().localPosition;
 
         while(percent < 1.0f)
@@ -89,6 +66,6 @@ public class Tile : MonoBehaviour
 
     public bool IsEmpty()
     {
-        return Level == 0;
+        return Numeric == 0;
     }
 }
