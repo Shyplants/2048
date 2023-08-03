@@ -181,7 +181,6 @@ public class Board : MonoBehaviour
     {
         isFilled = new bool[puzzleSize.x*puzzleSize.y];
         isMerged = new bool[puzzleSize.x*puzzleSize.y];
-        moveCount = 0;
         
         if(dx != 0.0f) // 수평 움직임
         {
@@ -212,7 +211,6 @@ public class Board : MonoBehaviour
                         }
                         else if(!isMerged[nextIndex] && (curNum == nextNum))
                         {
-                            // nextTile 레벨 올려야됨
                             moveIndex = nextIndex;
                             isMerged[moveIndex] = true;
                             break;
@@ -235,12 +233,66 @@ public class Board : MonoBehaviour
                 canActive = true;
                 return;
             }
-
-            foreach(Vector2Int v in moveList)
-            {
-                boardState[v.x].GetComponent<Tile>().OnMoveTo(tilePos[v.y]);
-            }
-            moveList.Clear();
         }
+        else  // 수직 움직임
+        {
+            bool moveDown = (dy < 0.0 ? true : false);
+            
+            for(int j=0; j<puzzleSize.x; ++j)
+            {
+                for(int i=0; i<puzzleSize.y; ++i)
+                {
+                    int cur = (moveDown ? puzzleSize.y-1-i : i);
+                    int curIndex = Pos2Dto1D(cur, j);
+                    int moveIndex = curIndex;
+
+                    int curNum = numState[curIndex];
+                    if(curNum == 0) continue;
+
+                    int ny = cur;
+                    while(true)
+                    {
+                        ny += (moveDown ? 1 : -1);
+                        if(OOB(ny, j)) break;
+
+                        int nextIndex = Pos2Dto1D(ny, j);
+                        int nextNum = numState[nextIndex];
+                        if(!isFilled[nextIndex])
+                        {
+                            moveIndex = nextIndex;
+                        }
+                        else if(!isMerged[nextIndex] && (curNum == nextNum))
+                        {
+                            moveIndex = nextIndex;
+                            isMerged[moveIndex] = true;
+                            break;
+                        }
+                        else break;
+                    }
+
+                    if(moveIndex != curIndex)
+                    {
+                        numState[moveIndex] += numState[curIndex];
+                        numState[curIndex] = 0;
+                        moveList.Add(new Vector2Int(curIndex, moveIndex));
+                    }
+                    isFilled[moveIndex] = true;
+                }
+            }
+            moveCount = moveList.Count;
+            if(moveCount == 0)
+            {
+                canActive = true;
+                return;
+            }
+        }
+
+        foreach(Vector2Int v in moveList)
+        {
+            boardState[v.x].GetComponent<Tile>().OnMoveTo(tilePos[v.y]);
+        }
+        moveList.Clear();
     }
+
+    
 }
