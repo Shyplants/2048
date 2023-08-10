@@ -48,7 +48,7 @@ public class Tile : MonoBehaviour
     {
         float current = 0;
         float percent = 0;
-        float moveTime = 0.1f;
+        float moveTime = 0.15f;
         Vector3 start = GetComponent<RectTransform>().localPosition;
 
         while(percent < 1.0f)

@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEditor;
 
 public class Board : MonoBehaviour
 {
@@ -18,6 +19,7 @@ public class Board : MonoBehaviour
     private Vector3[] tilePos;
     private Vector2 tileSize;
     private float Spacing;
+    private bool isRunning;
 
     private bool canActive;
     private float actionDelayTime;
@@ -27,6 +29,7 @@ public class Board : MonoBehaviour
     private bool[] isMerged;
     private int[] numState;
     private int moveCount;
+
 
     private void Awake()
     {
@@ -40,6 +43,7 @@ public class Board : MonoBehaviour
         tileSize = new Vector2(boarderRectTransform.rect.width / unitCnt, boarderRectTransform.rect.height / unitCnt);
         Spacing = tileSize.x * spaceRatio;
         anchorPos = tilesParent.position;
+        isRunning = true;
 
         actionDelayTime = 0.0f;
     }
@@ -94,6 +98,12 @@ public class Board : MonoBehaviour
 
     private void Update() 
     {
+        if(!isRunning)
+        {
+            Application.Quit();
+        }
+
+
         float x = Input.GetAxisRaw("Horizontal");
         float y = Input.GetAxisRaw("Vertical");
 
@@ -104,6 +114,36 @@ public class Board : MonoBehaviour
             canActive = false;
             ForceTiles(x, y);
         }
+    }
+
+    private bool IsFinish()
+    {
+        int[] dy = new int[] {-1, 1, 0, 0};
+        int[] dx = new int[] {0, 0, -1, 1};
+
+        for(int i=0; i<puzzleSize.y; ++i)
+        {
+            for(int j=0; j<puzzleSize.x; ++j)
+            {
+                int curIndex = Pos2Dto1D(i, j);
+                for(int dir=0; dir<4; ++dir)
+                {
+                    int ny = i + dy[dir];
+                    int nx = j + dx[dir];
+                    if(OOB(ny, nx)) continue;
+
+                    int nextIndex = Pos2Dto1D(ny, nx);
+                    if(numState[curIndex] == numState[nextIndex])
+                    {
+                        // 현재 타일과 인접한 타일의 상태가 같음(게임 진행 가능)
+                        return false;
+                    }
+                }
+                
+            }
+        }
+
+        return true;
     }
     private Vector2 GetTilePos(int index)
     {
@@ -128,11 +168,13 @@ public class Board : MonoBehaviour
     {
         if(emptyList.Count == 0) return false;
 
-        int index = emptyList[Random.Range(0, emptyList.Count)];
+        int randomIndex = Random.Range(0, emptyList.Count);
+        int index = emptyList[randomIndex];
         Tile tile = boardState[index].GetComponent<Tile>();
         tile.Numeric = 1 << (Random.Range(0, 2) + 1);
 
         numState[index] = tile.Numeric;
+        emptyList.RemoveAt(randomIndex);
 
         return true;
     }
@@ -167,12 +209,17 @@ public class Board : MonoBehaviour
         if(moveCount == 0)
         {   
             UpdateBoardState();
-             
             while(true)
             {
                 SpawnTile();
                 break;
             }
+
+            if(emptyList.Count == 0)
+            {
+                isRunning = !IsFinish();
+            }
+
             canActive = true;
         }
     }
